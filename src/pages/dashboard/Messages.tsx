@@ -1,23 +1,11 @@
-import { Search, Send, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Search, Send, CheckCircle2, ShieldCheck, Receipt, ShieldAlert, FileText, ArrowDownLeft } from 'lucide-react';
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { collection, doc, onSnapshot, query, orderBy, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, query, orderBy, setDoc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { useAuth } from '../../lib/AuthContext';
 import { useAgents } from '../../lib/agentsData';
-
-interface LiveMessage {
-  id: string;
-  userId: string;
-  senderRole: 'client' | 'admin';
-  senderName?: string;
-  agentId?: string;
-  agentName?: string;
-  agentRole?: string;
-  agentAvatar?: string;
-  text: string;
-  createdAt: string;
-}
+import { LiveMessage } from '../../components/dashboard/AgentChatDrawer';
 
 export function Messages() {
   const { user, profile } = useAuth();
@@ -125,14 +113,21 @@ export function Messages() {
         agentName: currentAgent?.name || 'Sarah Jenkins',
         agentRole: currentAgent?.role || 'Wealth Specialist',
         agentAvatar: currentAgent?.img || '',
+        messageType: 'text',
         text: textToSend,
         createdAt: now,
       };
 
       await setDoc(doc(db, 'chats', user.uid, 'messages', msgId), newMsg);
 
+      const chatRef = doc(db, 'chats', user.uid);
+      const chatSnap = await getDoc(chatRef);
+      const prevUnreadAdmin = chatSnap.exists()
+        ? Number(chatSnap.data()?.unreadByAdmin || 0)
+        : 0;
+
       await setDoc(
-        doc(db, 'chats', user.uid),
+        chatRef,
         {
           userId: user.uid,
           userEmail: profile?.email || user.email || '',
@@ -143,7 +138,7 @@ export function Messages() {
           selectedAgentAvatar: currentAgent?.img || '',
           lastMessage: textToSend,
           lastMessageAt: now,
-          unreadByAdmin: 1,
+          unreadByAdmin: prevUnreadAdmin + 1,
           updatedAt: now,
         },
         { merge: true }
@@ -173,8 +168,8 @@ export function Messages() {
             </p>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search specialists..."
@@ -182,7 +177,7 @@ export function Messages() {
               />
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
             {filteredAgents.map((ag) => {
               const isSelected = currentAgent?.id === ag.id;
@@ -255,6 +250,100 @@ export function Messages() {
             ) : (
               messages.map((msg) => {
                 const isClient = msg.senderRole === 'client';
+                const isFundingReq = msg.messageType === 'funding_request';
+                const isInvoice = msg.messageType === 'invoice';
+                const isAlert = msg.messageType === 'account_alert';
+                const isLetter = msg.messageType === 'letter';
+
+                if (isFundingReq) {
+                  return (
+                    <div key={msg.id} className="flex flex-col items-end">
+                      <div className="w-full max-w-lg rounded-2xl bg-slate-900 text-white p-4 border border-amber-500/40 shadow-md">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-2.5">
+                          <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                            <ArrowDownLeft className="w-4 h-4" /> Vault Funding Request
+                          </span>
+                          <span className="text-sm font-mono font-bold text-emerald-400 tabular-nums">
+                            ${Number(msg.fundingAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div className="space-y-1.5 text-xs sm:text-sm">
+                          <div>
+                            <span className="text-slate-400">Depositing From: </span>
+                            <span className="font-semibold text-white">{msg.fundingOrigin}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400">Reason for Deposit: </span>
+                            <span className="font-semibold text-white">{msg.fundingReason}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (isInvoice || isAlert || isLetter) {
+                  return (
+                    <div key={msg.id} className="flex flex-col items-start">
+                      <div className="text-[11px] font-semibold text-amber-700 mb-1 px-1">
+                        {msg.agentName || currentAgent?.name} · Official Vault Letterhead
+                      </div>
+                      <div
+                        className={`w-full max-w-xl rounded-2xl p-5 border shadow-md ${
+                          isAlert
+                            ? 'bg-red-50/90 border-red-300 text-slate-900'
+                            : isInvoice
+                            ? 'bg-amber-50/90 border-amber-300 text-slate-900'
+                            : 'bg-white border-slate-300 text-slate-900'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5 mb-3">
+                          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+                            {isInvoice ? (
+                              <Receipt className="w-4 h-4 text-amber-700" />
+                            ) : isAlert ? (
+                              <ShieldAlert className="w-4 h-4 text-red-600" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-slate-800" />
+                            )}
+                            <span>
+                              {msg.letterCategory || (isInvoice ? 'Official Vault Invoice' : isAlert ? 'Account Alert' : 'Official Letter')}
+                            </span>
+                          </div>
+                          {msg.letterReference && (
+                            <span className="text-xs font-mono font-semibold text-slate-500">
+                              {msg.letterReference}
+                            </span>
+                          )}
+                        </div>
+
+                        {msg.letterTitle && (
+                          <h4 className="font-bold text-slate-900 text-base mb-2">{msg.letterTitle}</h4>
+                        )}
+
+                        {typeof msg.invoiceAmount === 'number' && msg.invoiceAmount > 0 && (
+                          <div className="mb-3 p-3 rounded-xl bg-slate-900 text-white flex items-center justify-between">
+                            <div>
+                              <div className="text-[10px] uppercase tracking-wider text-slate-400">Amount Due</div>
+                              <div className="text-lg font-bold font-mono text-amber-400 tabular-nums">
+                                ${msg.invoiceAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              </div>
+                            </div>
+                            {msg.invoiceDueDate && (
+                              <div className="text-right">
+                                <div className="text-[10px] uppercase tracking-wider text-slate-400">Due Date</div>
+                                <div className="text-xs font-semibold text-white">{msg.invoiceDueDate}</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <p className="text-sm leading-relaxed whitespace-pre-line text-slate-800">{msg.text}</p>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     key={msg.id}
@@ -270,7 +359,7 @@ export function Messages() {
                       )}
                     </div>
                     <div
-                      className={`max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
+                      className={`max-w-xl p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
                         isClient
                           ? 'bg-slate-900 text-white rounded-tr-xs shadow-xs'
                           : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs shadow-xs'
@@ -292,7 +381,7 @@ export function Messages() {
           <div className="p-4 border-t border-slate-100 bg-white">
             <form onSubmit={handleSend} className="flex items-end gap-2">
               <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-slate-900 transition-all">
-                <textarea 
+                <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={`Write a message to ${currentAgent?.name || 'your advisor'}...`}
@@ -306,8 +395,8 @@ export function Messages() {
                   }}
                 />
               </div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={!message.trim() || sending}
                 className="p-3.5 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 disabled:opacity-50 transition-colors cursor-pointer"
               >

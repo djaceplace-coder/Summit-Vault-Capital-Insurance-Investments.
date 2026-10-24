@@ -2,7 +2,7 @@
   "entities": {
     "userProfile": {
       "title": "User Profile and Balances",
-      "description": "User profile data, investment metrics, cash balances, and assigned advisor",
+      "description": "User profile data, investment metrics, cash balances, notification counters, and assigned advisor",
       "type": "object",
       "properties": {
         "userId": {
@@ -47,6 +47,14 @@
         "returnsAmount": {
           "type": "number",
           "description": "All-time accumulated returns"
+        },
+        "unreadNotificationsCount": {
+          "type": "number",
+          "description": "Real-time count of unread notifications"
+        },
+        "totalNotificationsCount": {
+          "type": "number",
+          "description": "Real-time total count of notifications"
         },
         "role": {
           "type": "string",
@@ -119,8 +127,8 @@
         },
         "assetName": {
           "type": "string",
-          "description": "Name or symbol of the asset",
-          "maxLength": 100
+          "description": "Name or symbol of the asset or source/destination",
+          "maxLength": 200
         },
         "status": {
           "type": "string",
@@ -182,6 +190,135 @@
         }
       },
       "required": ["id", "userId", "policyNumber", "type", "coverage", "premium", "status"]
+    },
+    "paymentCard": {
+      "title": "Linked Withdrawal Method",
+      "description": "Client withdrawal destination (bank card, bank wire/ACH, crypto wallet, PayPal, or other)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique withdrawal method ID",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
+        },
+        "methodType": {
+          "type": "string",
+          "enum": ["card", "bank", "crypto", "paypal", "other"],
+          "description": "Withdrawal destination type"
+        },
+        "brand": {
+          "type": "string",
+          "description": "Card brand, bank name, coin ticker (BTC/ETH/USDT), or PayPal",
+          "maxLength": 120
+        },
+        "holderName": {
+          "type": "string",
+          "description": "Account holder, wallet label, or PayPal email",
+          "maxLength": 160
+        },
+        "last4": {
+          "type": "string",
+          "description": "Last 4 digits or short identifier",
+          "maxLength": 32
+        },
+        "expiry": {
+          "type": "string",
+          "description": "Expiry, network name, routing summary, or payout detail",
+          "maxLength": 120
+        },
+        "details": {
+          "type": "string",
+          "description": "Full wallet address, PayPal email, or settlement instructions",
+          "maxLength": 300
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether this is the default withdrawal method"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["id", "userId", "methodType", "brand", "holderName", "last4"]
+    },
+    "userNotification": {
+      "title": "User Notification",
+      "description": "Real-time notification for a user managed by Admin and User",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Notification ID",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Recipient user ID",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Notification headline",
+          "maxLength": 200
+        },
+        "message": {
+          "type": "string",
+          "description": "Notification body text",
+          "maxLength": 3000
+        },
+        "category": {
+          "type": "string",
+          "enum": ["account_alert", "invoice", "security", "funding", "system"],
+          "description": "Category of notification"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["critical", "high", "normal"],
+          "description": "Priority level"
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Whether the user has read the notification"
+        },
+        "readAt": {
+          "type": "string",
+          "description": "ISO timestamp when read",
+          "maxLength": 64
+        },
+        "requiresChatOpen": {
+          "type": "boolean",
+          "description": "Whether clicking this notification opens the personal advisor chat"
+        },
+        "senderAgentName": {
+          "type": "string",
+          "description": "Advisor or department that issued the alert",
+          "maxLength": 120
+        },
+        "referenceCode": {
+          "type": "string",
+          "description": "Reference ID or Invoice number",
+          "maxLength": 64
+        },
+        "invoiceAmount": {
+          "type": "number",
+          "description": "Optional invoice amount in USD"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO creation timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["id", "userId", "title", "message", "category", "read", "createdAt"]
     },
     "chatSession": {
       "title": "Client Chat Session",
@@ -252,7 +389,7 @@
     },
     "chatMessage": {
       "title": "Chat Message",
-      "description": "Individual message inside a client chat thread",
+      "description": "Individual message, funding request, invoice, or official letter inside a client chat thread",
       "type": "object",
       "properties": {
         "id": {
@@ -302,6 +439,53 @@
           "description": "Message content",
           "maxLength": 4000
         },
+        "messageType": {
+          "type": "string",
+          "enum": ["text", "funding_request", "invoice", "account_alert", "letter"],
+          "description": "Type of structured chat item"
+        },
+        "fundingOrigin": {
+          "type": "string",
+          "description": "Origin institution or method for a deposit request",
+          "maxLength": 200
+        },
+        "fundingReason": {
+          "type": "string",
+          "description": "Stated reason for deposit",
+          "maxLength": 300
+        },
+        "fundingAmount": {
+          "type": "number",
+          "description": "Requested deposit amount in USD"
+        },
+        "letterTitle": {
+          "type": "string",
+          "description": "Official title of the letter, invoice, or alert",
+          "maxLength": 200
+        },
+        "letterCategory": {
+          "type": "string",
+          "description": "Subcategory of the letter or account alert",
+          "maxLength": 120
+        },
+        "letterReference": {
+          "type": "string",
+          "description": "Invoice or official letter reference number",
+          "maxLength": 64
+        },
+        "invoiceAmount": {
+          "type": "number",
+          "description": "Amount due on an official invoice"
+        },
+        "invoiceDueDate": {
+          "type": "string",
+          "description": "Due date for an official invoice",
+          "maxLength": 64
+        },
+        "requiresAction": {
+          "type": "boolean",
+          "description": "Whether client acknowledgment or response is required"
+        },
         "createdAt": {
           "type": "string",
           "description": "ISO creation timestamp",
@@ -309,6 +493,53 @@
         }
       },
       "required": ["id", "userId", "senderRole", "text", "createdAt"]
+    },
+    "letterTemplate": {
+      "title": "Admin Letter & Alert Template",
+      "description": "Reusable template for official letters, invoices, and account alerts",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Template ID",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Template display name",
+          "maxLength": 150
+        },
+        "templateType": {
+          "type": "string",
+          "enum": ["invoice", "account_alert", "letter"],
+          "description": "Template classification"
+        },
+        "category": {
+          "type": "string",
+          "description": "Alert or invoice category label",
+          "maxLength": 120
+        },
+        "title": {
+          "type": "string",
+          "description": "Subject/Header of the document",
+          "maxLength": 200
+        },
+        "body": {
+          "type": "string",
+          "description": "Template body text",
+          "maxLength": 3500
+        },
+        "defaultAmount": {
+          "type": "number",
+          "description": "Optional default invoice amount"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["id", "name", "templateType", "title", "body"]
     },
     "agentRecord": {
       "title": "Accredited Agent",
@@ -388,6 +619,11 @@
           "description": "Admin Center access passcode",
           "maxLength": 128
         },
+        "adminEmail": {
+          "type": "string",
+          "description": "Primary admin email address",
+          "maxLength": 256
+        },
         "updatedAt": {
           "type": "string",
           "description": "Last updated timestamp",
@@ -422,13 +658,25 @@
       "schema": "insurancePolicy",
       "description": "Active and past client insurance policies"
     },
+    "/users/{userId}/cards/{cardId}": {
+      "schema": "paymentCard",
+      "description": "Linked client withdrawal methods (cards, banks, crypto, PayPal, etc.)"
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": "userNotification",
+      "description": "Real-time notifications for the user"
+    },
     "/chats/{chatId}": {
       "schema": "chatSession",
       "description": "Client chat threads funneled to admin"
     },
     "/chats/{chatId}/messages/{messageId}": {
       "schema": "chatMessage",
-      "description": "Messages within a client chat thread"
+      "description": "Messages, funding requests, invoices, and alerts within a client chat thread"
+    },
+    "/letterTemplates/{templateId}": {
+      "schema": "letterTemplate",
+      "description": "Saved admin templates for invoices, account alerts, and official letters"
     },
     "/agents/{agentId}": {
       "schema": "agentRecord",

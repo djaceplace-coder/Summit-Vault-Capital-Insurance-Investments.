@@ -161,8 +161,8 @@ export function AdminGate({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      <div className="text-center text-xs text-slate-600 relative z-10">
-        Summit Vault Capital · Encrypted Master Governance Protocol
+      <div className="text-center text-xs text-slate-500 relative z-10">
+        Summit Vault Capital · Master Governance Desk (<span className="text-amber-400/90 font-mono">admin@summitvaultcapital.online</span>)
       </div>
     </div>
   );

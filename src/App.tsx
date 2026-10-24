@@ -105,6 +105,7 @@ export default function App() {
           <Route path="dashboard" element={<AdminGate><AdminDashboard initialTab="clients" /></AdminGate>} />
           <Route path="balances" element={<AdminGate><AdminDashboard initialTab="clients" /></AdminGate>} />
           <Route path="chats" element={<AdminGate><AdminDashboard initialTab="chats" /></AdminGate>} />
+          <Route path="notifications" element={<AdminGate><AdminDashboard initialTab="notifications" /></AdminGate>} />
           <Route path="agents" element={<AdminGate><AdminDashboard initialTab="agents" /></AdminGate>} />
           <Route path="settings" element={<AdminGate><AdminDashboard initialTab="settings" /></AdminGate>} />
         </Route>

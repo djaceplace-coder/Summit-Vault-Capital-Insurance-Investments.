@@ -29,7 +29,7 @@ export const DEFAULT_AGENTS: AgentRecord[] = [
     img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80',
     status: 'Active',
     aum: '$45.2M',
-    clients: 124,
+    clients: 0,
     bio: 'Sarah brings over a decade of experience in traditional equities and holistic wealth planning. She specializes in creating tax-efficient portfolios for high-net-worth individuals and families.'
   },
   {
@@ -43,7 +43,7 @@ export const DEFAULT_AGENTS: AgentRecord[] = [
     img: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=800&auto=format&fit=crop&q=80',
     status: 'Active',
     aum: '$32.1M',
-    clients: 89,
+    clients: 0,
     bio: 'David leads institutional digital asset custody and cold-storage allocation strategies, bridging sovereign-grade blockchain custody with traditional portfolio management.'
   },
   {
@@ -57,7 +57,7 @@ export const DEFAULT_AGENTS: AgentRecord[] = [
     img: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&auto=format&fit=crop&q=80',
     status: 'Active',
     aum: '$68.5M',
-    clients: 156,
+    clients: 0,
     bio: 'Elena structures private placement life insurance (PPLI), executive key-person policies, and cross-border generational estate trusts.'
   },
   {
@@ -71,7 +71,7 @@ export const DEFAULT_AGENTS: AgentRecord[] = [
     img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80',
     status: 'Active',
     aum: '$28.4M',
-    clients: 64,
+    clients: 0,
     bio: 'Marcus oversees sovereign bullion, numismatic reserves, and private credit allocations designed for non-correlated capital preservation.'
   },
   {
@@ -85,7 +85,7 @@ export const DEFAULT_AGENTS: AgentRecord[] = [
     img: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&auto=format&fit=crop&q=80',
     status: 'Active',
     aum: '$19.8M',
-    clients: 51,
+    clients: 0,
     bio: 'Priya specializes in quantitative rebalancing, risk-parity portfolios, and automated tax-loss harvesting across multi-currency vaults.'
   },
   {
@@ -99,7 +99,7 @@ export const DEFAULT_AGENTS: AgentRecord[] = [
     img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=80',
     status: 'Active',
     aum: '$54.0M',
-    clients: 112,
+    clients: 0,
     bio: 'Michael heads high-value property, aviation, marine, and fine art casualty underwriting for private family offices.'
   }
 ];

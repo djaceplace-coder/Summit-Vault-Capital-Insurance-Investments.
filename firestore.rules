@@ -2,44 +2,27 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default deny all
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
-    }
-
-    function isSignedIn() {
+    function isAuthenticated() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
     function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'adereraadenike@gmail.com' ||
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email == 'adereraadenike@gmail.com' && request.auth.token.email_verified == true) ||
         request.auth.token.email == 'admin@summitvaultcapital.online' ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        request.auth.token.email == 'admin@summitvault.com'
       );
     }
 
     function isValidUserProfile(data) {
-      return data.userId is string &&
-        data.userId.size() <= 128 &&
-        data.email is string &&
-        data.email.size() <= 256 &&
+      return data.keys().hasAll(['userId', 'email']) &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.email is string && data.email.size() <= 256 &&
         (!('firstName' in data) || (data.firstName is string && data.firstName.size() <= 100)) &&
         (!('lastName' in data) || (data.lastName is string && data.lastName.size() <= 100)) &&
         (!('phone' in data) || (data.phone is string && data.phone.size() <= 64)) &&
@@ -47,9 +30,11 @@ service cloud.firestore {
         (!('investedAmount' in data) || data.investedAmount is number) &&
         (!('cashBalance' in data) || data.cashBalance is number) &&
         (!('returnsAmount' in data) || data.returnsAmount is number) &&
-        (!('role' in data) || (data.role in ['client', 'admin'])) &&
-        (!('status' in data) || (data.status in ['active', 'suspended', 'pending'])) &&
-        (!('kycStatus' in data) || (data.kycStatus in ['verified', 'pending', 'action_required'])) &&
+        (!('unreadNotificationsCount' in data) || data.unreadNotificationsCount is number) &&
+        (!('totalNotificationsCount' in data) || data.totalNotificationsCount is number) &&
+        (!('role' in data) || data.role in ['client', 'admin']) &&
+        (!('status' in data) || data.status in ['active', 'suspended', 'pending']) &&
+        (!('kycStatus' in data) || data.kycStatus in ['verified', 'pending', 'action_required']) &&
         (!('assignedAgentId' in data) || (data.assignedAgentId is string && data.assignedAgentId.size() <= 128)) &&
         (!('assignedAgentName' in data) || (data.assignedAgentName is string && data.assignedAgentName.size() <= 120)) &&
         (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000)) &&
@@ -58,35 +43,62 @@ service cloud.firestore {
     }
 
     function isValidTransaction(data) {
-      return data.id is string &&
-        data.id.size() <= 128 &&
-        data.userId is string &&
-        data.userId.size() <= 128 &&
+      return data.keys().hasAll(['id', 'userId', 'type', 'amount', 'status']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId.size() <= 128 &&
         data.type in ['deposit', 'withdrawal', 'buy', 'sell', 'dividend', 'fee'] &&
         data.amount is number &&
+        (!('assetName' in data) || (data.assetName is string && data.assetName.size() <= 200)) &&
         data.status in ['completed', 'pending', 'failed'] &&
-        (!('assetName' in data) || (data.assetName is string && data.assetName.size() <= 100)) &&
         (!('timestamp' in data) || (data.timestamp is string && data.timestamp.size() <= 64));
     }
 
-    function isValidPolicy(data) {
-      return data.id is string &&
-        data.id.size() <= 128 &&
-        data.userId is string &&
-        data.userId.size() <= 128 &&
-        data.policyNumber is string &&
-        data.policyNumber.size() <= 64 &&
-        data.type is string &&
-        data.type.size() <= 100 &&
+    function isValidInsurancePolicy(data) {
+      return data.keys().hasAll(['id', 'userId', 'policyNumber', 'type', 'coverage', 'premium', 'status']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.policyNumber is string && data.policyNumber.size() <= 64 &&
+        data.type is string && data.type.size() <= 100 &&
         data.coverage is number &&
         data.premium is number &&
         data.status in ['active', 'pending', 'lapsed'] &&
         (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
     }
 
+    function isValidPaymentCard(data) {
+      return data.keys().hasAll(['id', 'userId', 'methodType', 'brand', 'holderName', 'last4']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.methodType in ['card', 'bank', 'crypto', 'paypal', 'other'] &&
+        data.brand is string && data.brand.size() <= 120 &&
+        data.holderName is string && data.holderName.size() <= 160 &&
+        data.last4 is string && data.last4.size() <= 32 &&
+        (!('expiry' in data) || (data.expiry is string && data.expiry.size() <= 120)) &&
+        (!('details' in data) || (data.details is string && data.details.size() <= 300)) &&
+        (!('isDefault' in data) || data.isDefault is bool) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'message', 'category', 'read', 'createdAt']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.title is string && data.title.size() <= 200 &&
+        data.message is string && data.message.size() <= 3000 &&
+        data.category in ['account_alert', 'invoice', 'security', 'funding', 'system'] &&
+        data.read is bool &&
+        (!('priority' in data) || data.priority in ['critical', 'high', 'normal']) &&
+        (!('readAt' in data) || (data.readAt is string && data.readAt.size() <= 64)) &&
+        (!('requiresChatOpen' in data) || data.requiresChatOpen is bool) &&
+        (!('senderAgentName' in data) || (data.senderAgentName is string && data.senderAgentName.size() <= 120)) &&
+        (!('referenceCode' in data) || (data.referenceCode is string && data.referenceCode.size() <= 64)) &&
+        (!('invoiceAmount' in data) || data.invoiceAmount is number) &&
+        data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
     function isValidChatSession(data) {
-      return data.userId is string &&
-        data.userId.size() <= 128 &&
+      return data.keys().hasAll(['userId']) &&
+        data.userId is string && data.userId.size() <= 128 &&
         (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 256)) &&
         (!('userName' in data) || (data.userName is string && data.userName.size() <= 200)) &&
         (!('selectedAgentId' in data) || (data.selectedAgentId is string && data.selectedAgentId.size() <= 128)) &&
@@ -101,104 +113,89 @@ service cloud.firestore {
     }
 
     function isValidChatMessage(data) {
-      return data.id is string &&
-        data.id.size() <= 128 &&
-        data.userId is string &&
-        data.userId.size() <= 128 &&
+      return data.keys().hasAll(['id', 'userId', 'senderRole', 'text', 'createdAt']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId.size() <= 128 &&
         data.senderRole in ['client', 'admin'] &&
-        data.text is string &&
-        data.text.size() >= 1 &&
-        data.text.size() <= 4000 &&
-        data.createdAt is string &&
-        data.createdAt.size() <= 64 &&
         (!('senderName' in data) || (data.senderName is string && data.senderName.size() <= 200)) &&
         (!('agentId' in data) || (data.agentId is string && data.agentId.size() <= 128)) &&
         (!('agentName' in data) || (data.agentName is string && data.agentName.size() <= 120)) &&
         (!('agentRole' in data) || (data.agentRole is string && data.agentRole.size() <= 120)) &&
-        (!('agentAvatar' in data) || (data.agentAvatar is string && data.agentAvatar.size() <= 500));
+        (!('agentAvatar' in data) || (data.agentAvatar is string && data.agentAvatar.size() <= 500)) &&
+        (!('messageType' in data) || data.messageType in ['text', 'funding_request', 'invoice', 'account_alert', 'letter']) &&
+        (!('fundingOrigin' in data) || (data.fundingOrigin is string && data.fundingOrigin.size() <= 200)) &&
+        (!('fundingReason' in data) || (data.fundingReason is string && data.fundingReason.size() <= 300)) &&
+        (!('fundingAmount' in data) || data.fundingAmount is number) &&
+        (!('letterTitle' in data) || (data.letterTitle is string && data.letterTitle.size() <= 200)) &&
+        (!('letterCategory' in data) || (data.letterCategory is string && data.letterCategory.size() <= 120)) &&
+        (!('letterReference' in data) || (data.letterReference is string && data.letterReference.size() <= 64)) &&
+        (!('invoiceAmount' in data) || data.invoiceAmount is number) &&
+        (!('invoiceDueDate' in data) || (data.invoiceDueDate is string && data.invoiceDueDate.size() <= 64)) &&
+        (!('requiresAction' in data) || data.requiresAction is bool) &&
+        data.text is string && data.text.size() <= 4000 &&
+        data.createdAt is string && data.createdAt.size() <= 64;
     }
 
-    function isValidAgent(data) {
-      return data.id is string &&
-        data.id.size() <= 128 &&
-        data.name is string &&
-        data.name.size() <= 120 &&
-        data.role is string &&
-        data.role.size() <= 120 &&
-        data.status in ['Active', 'Pending', 'Suspended'] &&
-        (!('email' in data) || (data.email is string && data.email.size() <= 256)) &&
-        (!('exp' in data) || (data.exp is string && data.exp.size() <= 64)) &&
-        (!('location' in data) || (data.location is string && data.location.size() <= 120)) &&
-        (!('lang' in data) || (data.lang is string && data.lang.size() <= 120)) &&
-        (!('img' in data) || (data.img is string && data.img.size() <= 500)) &&
-        (!('aum' in data) || (data.aum is string && data.aum.size() <= 64)) &&
-        (!('clients' in data) || data.clients is number) &&
-        (!('bio' in data) || (data.bio is string && data.bio.size() <= 2000));
-    }
-
-    function isValidSystemConfig(data) {
-      return data.passcode is string &&
-        data.passcode.size() >= 4 &&
-        data.passcode.size() <= 128 &&
-        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
-    }
-
-    // User profile and balances
     match /users/{userId} {
-      allow get, list: if true;
-      allow create: if isValidId(userId) && isValidUserProfile(incoming()) && incoming().userId == userId;
-      allow update: if isValidId(userId) && isValidUserProfile(incoming()) && incoming().userId == existing().userId;
-      allow delete: if isValidId(userId);
+      allow read: if true;
+      allow create, update: if isValidUserProfile(request.resource.data);
+      allow delete: if true;
 
-      // Transactions subcollection
       match /transactions/{transactionId} {
-        allow get, list: if true;
-        allow create: if isValidId(transactionId) && isValidTransaction(incoming()) && incoming().userId == userId;
-        allow update: if isValidId(transactionId) && isValidTransaction(incoming());
-        allow delete: if isValidId(transactionId);
+        allow read: if true;
+        allow create, update: if isValidTransaction(request.resource.data);
+        allow delete: if true;
       }
 
-      // Insurance policies subcollection
       match /policies/{policyId} {
-        allow get, list: if true;
-        allow create: if isValidId(policyId) && isValidPolicy(incoming()) && incoming().userId == userId;
-        allow update: if isValidId(policyId) && isValidPolicy(incoming());
-        allow delete: if isValidId(policyId);
+        allow read: if true;
+        allow create, update: if isValidInsurancePolicy(request.resource.data);
+        allow delete: if true;
+      }
+
+      match /cards/{cardId} {
+        allow read: if true;
+        allow create, update: if isValidPaymentCard(request.resource.data);
+        allow delete: if true;
+      }
+
+      match /notifications/{notificationId} {
+        allow read: if true;
+        allow create, update: if isValidNotification(request.resource.data);
+        allow delete: if true;
       }
     }
 
-    // Real-time 2-way Client & Admin Chat Sessions
     match /chats/{chatId} {
-      allow get, list: if true;
-      allow create, update: if isValidId(chatId) && isValidChatSession(incoming());
-      allow delete: if isValidId(chatId);
+      allow read: if true;
+      allow create, update: if isValidChatSession(request.resource.data);
+      allow delete: if true;
 
       match /messages/{messageId} {
-        allow get, list: if true;
-        allow create, update: if isValidId(messageId) && isValidChatMessage(incoming());
-        allow delete: if isValidId(messageId);
+        allow read: if true;
+        allow create, update: if isValidChatMessage(request.resource.data);
+        allow delete: if true;
       }
     }
 
-    // Accredited Agents Directory
-    match /agents/{agentId} {
-      allow get, list: if true;
-      allow create, update: if isValidId(agentId) && isValidAgent(incoming());
-      allow delete: if isValidId(agentId);
-    }
-
-    // System & Admin Passcode Configuration
-    match /system/{docId} {
-      allow get, list: if true;
-      allow create, update: if isValidId(docId) && isValidSystemConfig(incoming());
-    }
-
-    // Admins registry
-    match /admins/{adminId} {
+    match /letterTemplates/{templateId} {
       allow read, write: if true;
     }
 
-    // Connection heartbeat
+    match /agents/{agentId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /system/{docId} {
+      allow read, write: if true;
+    }
+
+    match /admins/{adminId} {
+      allow read: if true;
+      allow write: if isOwner(adminId) || isAdmin();
+    }
+
     match /test/{docId} {
       allow read, write: if true;
     }
