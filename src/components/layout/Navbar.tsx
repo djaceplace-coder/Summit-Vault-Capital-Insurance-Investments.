@@ -101,7 +101,7 @@ export function Navbar() {
                   to="/signup"
                   className="bg-slate-950 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs hover:shadow-md active:scale-95 border border-slate-800 flex items-center gap-1.5"
                 >
-                  <span>Open Vault</span>
+                  <span>Start Investing</span>
                   <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
                 </Link>
               </>
@@ -196,7 +196,7 @@ export function Navbar() {
                       className="w-full text-center py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold rounded-xl text-base shadow-lg shadow-amber-950/40 flex items-center justify-center gap-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <span>Open Vault</span>
+                      <span>Start Investing</span>
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                     <Link

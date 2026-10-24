@@ -270,10 +270,10 @@ export function AdminDashboard({
             updatedAt: data.updatedAt,
           });
         });
-        list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        list.sort((a, b) => (b.createdAt || b.updatedAt || '').localeCompare(a.createdAt || a.updatedAt || ''));
         setUsers(list);
-        if (list.length > 0 && !inspectUserId) {
-          setInspectUserId(list[0].userId);
+        if (list.length > 0) {
+          setInspectUserId((prev) => prev || list[0].userId);
         }
         setUsersLoading(false);
       },
@@ -283,7 +283,7 @@ export function AdminDashboard({
       }
     );
     return () => unsub();
-  }, [inspectUserId]);
+  }, []);
 
   // 2. Subscribe to custom letterTemplates in Firestore
   useEffect(() => {
@@ -325,6 +325,43 @@ export function AdminDashboard({
     );
     return () => unsub();
   }, []);
+
+  // 3b. Auto-reconcile any client who initiated a chat session if their /users/{userId} doc was missing
+  useEffect(() => {
+    if (usersLoading || chatSessions.length === 0) return;
+    chatSessions.forEach((session) => {
+      if (!session.userId) return;
+      const existsInUsers = users.some((u) => u.userId === session.userId);
+      if (!existsInUsers && (session.userEmail || session.userName)) {
+        const nameParts = (session.userName || '').trim().split(' ').filter(Boolean);
+        const now = new Date().toISOString();
+        setDoc(
+          doc(db, 'users', session.userId),
+          {
+            userId: session.userId,
+            email: (session.userEmail || '').toLowerCase(),
+            firstName: nameParts[0] || 'Investor',
+            lastName: nameParts.slice(1).join(' ') || '',
+            phone: '+1 (555) 000-0000',
+            totalBalance: 0,
+            investedAmount: 0,
+            cashBalance: 0,
+            returnsAmount: 0,
+            unreadNotificationsCount: 0,
+            totalNotificationsCount: 0,
+            role: 'client',
+            status: 'active',
+            kycStatus: 'verified',
+            assignedAgentId: session.selectedAgentId || 'AG-001',
+            assignedAgentName: session.selectedAgentName || 'Sarah Jenkins',
+            createdAt: session.updatedAt || now,
+            updatedAt: now,
+          },
+          { merge: true }
+        ).catch(() => {});
+      }
+    });
+  }, [chatSessions, users, usersLoading]);
 
   // 4. Subscribe to messages of the currently selected client chat
   useEffect(() => {

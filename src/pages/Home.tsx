@@ -70,11 +70,11 @@ export function Home() {
             variants={fadeInUp}
             className="text-3xl sm:text-5xl lg:text-7xl font-bold font-heading text-white leading-[1.08] mb-6 tracking-tight drop-shadow-sm"
           >
-            Sovereign Wealth. <br />
+            Investing and <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100">
-              Ironclad Security.
+              Protection, Finally
             </span><br />
-            Total Agility.
+            Under One Roof.
           </motion.h1>
 
           <motion.p 
@@ -89,7 +89,7 @@ export function Home() {
               to="/signup" 
               className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold px-8 py-4 rounded-xl text-base transition-all shadow-lg shadow-amber-900/30 active:scale-95 text-center flex items-center justify-center gap-2"
             >
-              Open Your Vault <ArrowRight className="w-4 h-4" />
+              Start Investing <ArrowRight className="w-4 h-4" />
             </Link>
             <Link 
               to="/insurance/quote" 
