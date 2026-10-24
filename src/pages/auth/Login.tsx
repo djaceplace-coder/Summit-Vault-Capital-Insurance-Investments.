@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { ArrowRight, Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
+import { Logo } from '../../components/ui/Logo';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -61,21 +62,16 @@ export function Login() {
           >
             <div className="flex flex-col items-center">
               <motion.div 
-                className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-6 overflow-hidden relative shadow-lg"
+                className="w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center mb-6 overflow-hidden relative shadow-lg border border-amber-500/30"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               >
-                <span className="text-white font-heading font-bold text-3xl leading-none relative z-10">S</span>
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
-                  animate={{ x: ['-200%', '200%'] }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
-                />
+                <Logo showWordmark={false} dark />
               </motion.div>
               <div className="text-xl font-bold font-heading text-slate-900 mb-2 relative overflow-hidden">
-                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-600 to-slate-900 animate-pulse">SUMMIT VAULT CAPITAL</span>
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-amber-700 to-slate-900 animate-pulse">SUMMIT VAULT CAPITAL</span>
               </div>
-              <p className="text-sm text-slate-500 font-medium">Securing Firebase authentication...</p>
+              <p className="text-sm text-slate-500 font-medium">Securing session credentials...</p>
             </div>
           </motion.div>
         )}
@@ -87,11 +83,11 @@ export function Login() {
         className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 sm:p-12 relative z-10"
       >
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-md shadow-slate-900/10">
-            <span className="text-white font-heading font-bold text-2xl leading-none">S</span>
-          </div>
-          <h2 className="text-3xl font-bold font-heading text-slate-900 mb-2">Welcome back</h2>
-          <p className="text-slate-500">Log in to manage your portfolio and insurance policies.</p>
+          <Link to="/" className="inline-flex justify-center mb-5 hover:opacity-90 transition-opacity">
+            <Logo />
+          </Link>
+          <h2 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900 mb-2">Welcome back</h2>
+          <p className="text-slate-500 text-sm">Log in to manage your portfolio and insurance policies.</p>
         </div>
 
         {error && (

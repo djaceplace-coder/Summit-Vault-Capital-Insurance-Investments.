@@ -27,8 +27,23 @@ export function ClientLayout() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatPrefill, setChatPrefill] = useState("");
   const { user, profile, loading, signOut, isAdmin } = useAuth();
-  if (loading) return null;
-  if (!user) return <Navigate to="/login" />;
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white px-4">
+        <div className="relative flex items-center justify-center mb-6">
+          <div className="w-16 h-16 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin" />
+          <div className="absolute">
+            <Logo showWordmark={false} dark />
+          </div>
+        </div>
+        <p className="text-xs uppercase tracking-[0.24em] font-semibold text-amber-300">Accessing Vault Custody...</p>
+        <p className="text-xs text-slate-500 mt-1.5">Validating secure session credentials</p>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
 
   const openAgentChat = (prefill: string = '') => {
     setChatPrefill(prefill);

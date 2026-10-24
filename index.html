@@ -2,19 +2,196 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A premium full-service investment brokerage and insurance platform." />
-    <meta property="og:title" content="Summit Vault Capital" />
-    <meta property="og:description" content="A premium full-service investment brokerage and insurance platform." />
-    <title>Summit Vault Capital</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    
+    <!-- Core Identity & Business Bio -->
+    <title>Summit Vault Capital — Institutional Investment Brokerage &amp; Private Vault Depository</title>
+    <meta 
+      name="description" 
+      content="Institutional multi-asset investment brokerage and private insurance depository uniting high-conviction wealth management with segregated vault custody." 
+    />
+    <meta name="author" content="Summit Vault Capital" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#090d16" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Summit Vault" />
+    <meta name="application-name" content="Summit Vault Capital" />
+
+    <!-- Favicons & App Icons for Search Snippets and Minimized Tabs -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- OpenGraph Social Cards -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Summit Vault Capital" />
+    <meta property="og:title" content="Summit Vault Capital — Sovereign Wealth, Ironclad Security, Total Agility" />
+    <meta 
+      property="og:description" 
+      content="Institutional multi-asset investment brokerage and private insurance depository uniting high-conviction wealth management with segregated vault custody." 
+    />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Summit Vault Capital Institutional Wealth &amp; Asset Protection" />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@SummitVaultCap" />
+    <meta name="twitter:creator" content="@SummitVaultCap" />
+    <meta name="twitter:title" content="Summit Vault Capital — Sovereign Wealth &amp; Depository" />
+    <meta 
+      name="twitter:description" 
+      content="Institutional multi-asset investment brokerage and private insurance depository uniting high-conviction wealth management with segregated vault custody." 
+    />
+    <meta name="twitter:image" content="/og-image.png" />
+    <meta name="twitter:image:alt" content="Summit Vault Capital" />
+
+    <!-- Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+
+    <!-- Schema.org Structured Data: Google Sitelinks & Navigation Structure -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "FinancialService",
+          "@id": "https://summitvaultcapital.online/#organization",
+          "name": "Summit Vault Capital",
+          "alternateName": "Summit Vault",
+          "url": "https://summitvaultcapital.online/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://summitvaultcapital.online/logo.png",
+            "width": 180,
+            "height": 180
+          },
+          "image": "https://summitvaultcapital.online/og-image.png",
+          "description": "Institutional multi-asset investment brokerage and private insurance depository uniting high-conviction wealth management with segregated vault custody.",
+          "knowsAbout": [
+            "Wealth Management",
+            "Multi-Asset Brokerage",
+            "Digital Asset Custody",
+            "Private Vault Insurance",
+            "Estate Planning"
+          ],
+          "areaServed": "Global",
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Institutional Wealth Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Multi-Asset Brokerage",
+                  "url": "https://summitvaultcapital.online/products"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Private Vault Insurance",
+                  "url": "https://summitvaultcapital.online/insurance"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://summitvaultcapital.online/#website",
+          "url": "https://summitvaultcapital.online/",
+          "name": "Summit Vault Capital",
+          "publisher": {
+            "@id": "https://summitvaultcapital.online/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://summitvaultcapital.online/learn?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "ItemList",
+          "@id": "https://summitvaultcapital.online/#sitelinks",
+          "name": "Summit Vault Capital Sitelinks Navigation",
+          "itemListElement": [
+            {
+              "@type": "SiteNavigationElement",
+              "position": 1,
+              "name": "Products",
+              "description": "Equities, digital assets, insurance-linked securities, and alternative portfolio strategies.",
+              "url": "https://summitvaultcapital.online/products"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 2,
+              "name": "Insurance",
+              "description": "Comprehensive private wealth protection, life, property, and bespoke casualty policies.",
+              "url": "https://summitvaultcapital.online/insurance"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 3,
+              "name": "Agents",
+              "description": "Connect with accredited fiduciary advisors and licensed private wealth specialists.",
+              "url": "https://summitvaultcapital.online/agents"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 4,
+              "name": "Learn",
+              "description": "Educational intelligence, macroeconomic insights, and institutional asset guides.",
+              "url": "https://summitvaultcapital.online/learn"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 5,
+              "name": "About",
+              "description": "Fiduciary heritage, custody architecture, Nevada state charter, and leadership team.",
+              "url": "https://summitvaultcapital.online/about"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 6,
+              "name": "For Business",
+              "description": "Corporate treasury custody, captive insurance, executive liquidity, and institutional solutions.",
+              "url": "https://summitvaultcapital.online/for-business"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 7,
+              "name": "Sign Up",
+              "description": "Open your segregated institutional vault and multi-asset trading account.",
+              "url": "https://summitvaultcapital.online/signup"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 8,
+              "name": "Log In",
+              "description": "Access your secure client vault portal, real-time balances, and private transactions.",
+              "url": "https://summitvaultcapital.online/login"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
-  <body>
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-amber-400 selection:text-slate-950">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

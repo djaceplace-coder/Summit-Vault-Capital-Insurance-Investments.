@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="50%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <radialGradient id="goldGlow" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#d97706" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#090d16" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <rect width="1200" height="630" fill="url(#goldGlow)"/>
+
+  <!-- Subtle Vault Border -->
+  <rect x="30" y="30" width="1140" height="570" rx="20" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.25"/>
+  <rect x="42" y="42" width="1116" height="546" rx="14" fill="none" stroke="#f59e0b" stroke-width="0.8" stroke-opacity="0.12"/>
+
+  <!-- Center Emblem (Scale 1.8x) -->
+  <g transform="translate(510, 110)">
+    <rect width="180" height="180" fill="#0b1120" rx="36" stroke="#f59e0b" stroke-width="2.5" stroke-opacity="0.4"/>
+    <g transform="translate(40, 40) scale(1)">
+      <!-- Outer Diamond -->
+      <rect x="50" y="8" width="58" height="58" rx="10" transform="rotate(45 50 8)" stroke="#f59e0b" stroke-width="6" fill="none"/>
+      <!-- Mountain Peak -->
+      <path d="M28 58 L50 32 L72 58" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <!-- Keystone -->
+      <path d="M38 70 L50 56 L62 70" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="50" cy="22" r="4.5" fill="#f59e0b"/>
+    </g>
+  </g>
+
+  <!-- Wordmark Line 1: SUMMIT VAULT -->
+  <text x="600" y="348" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="24" font-weight="600" fill="#cbd5e1" letter-spacing="8">SUMMIT VAULT</text>
+
+  <!-- Wordmark Line 2: CAPITAL -->
+  <text x="600" y="405" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="12">CAPITAL</text>
+
+  <!-- Tagline -->
+  <text x="600" y="465" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="20" font-weight="600" fill="url(#goldText)" letter-spacing="3">SOVEREIGN WEALTH · IRONCLAD SECURITY · TOTAL AGILITY</text>
+
+  <!-- Subtitle / Business Bio -->
+  <text x="600" y="515" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-size="16" font-weight="400" fill="#94a3b8" letter-spacing="1">Institutional Multi-Asset Investment Brokerage &amp; Private Insurance Depository</text>
+  
+  <!-- Trust Badges Strip -->
+  <g transform="translate(360, 555)">
+    <text x="0" y="0" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="500" fill="#64748b">Tier-1 Segregated Vaults</text>
+    <circle cx="170" cy="-4" r="2.5" fill="#f59e0b" fill-opacity="0.6"/>
+    <text x="185" y="0" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="500" fill="#64748b">$4.2B+ AUM Safeguarded</text>
+    <circle cx="370" cy="-4" r="2.5" fill="#f59e0b" fill-opacity="0.6"/>
+    <text x="385" y="0" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="500" fill="#64748b">A+ Rated Reinsurance</text>
+  </g>
+</svg>

@@ -12,8 +12,16 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
   body {
     @apply font-sans bg-[#FAFAFA] text-slate-800 antialiased;
+    overflow-x: hidden;
+    width: 100%;
+    min-height: 100vh;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading text-slate-900 tracking-tight;
@@ -27,6 +35,12 @@
   }
   .hide-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
+  }
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
   }
 }
 

@@ -42,10 +42,14 @@ import { Messages } from './pages/dashboard/Messages';
 import { Settings } from './pages/dashboard/Settings';
 import { InsurancePolicies } from './pages/dashboard/InsurancePolicies';
 
+import { ScrollToTop } from './components/common/ScrollToTop';
+import { NotFound } from './pages/NotFound';
+
 export default function App() {
   return (
     <AuthProvider>
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<Home />} />
@@ -101,6 +105,9 @@ export default function App() {
           <Route path="agents" element={<AdminAgents />} />
           <Route path="balances" element={<AdminBalances />} />
         </Route>
+
+        {/* 404 Catch-All Route for Clean Reloads */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
     </AuthProvider>

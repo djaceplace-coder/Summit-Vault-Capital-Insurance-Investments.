@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { ArrowRight, Mail, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
+import { Logo } from '../../components/ui/Logo';
 
 export function Signup() {
   const [searchParams] = useSearchParams();
@@ -81,9 +82,9 @@ export function Signup() {
         className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 sm:p-12 overflow-hidden relative"
       >
         <div className="text-center mb-6">
-          <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-md shadow-slate-900/10">
-            <span className="text-white font-heading font-bold text-2xl leading-none">S</span>
-          </div>
+          <Link to="/" className="inline-flex justify-center mb-4 hover:opacity-90 transition-opacity">
+            <Logo />
+          </Link>
           <h2 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900 mb-1">Create Account</h2>
           <p className="text-slate-500 text-sm">Instant access to Summit Vault Capital's investment & insurance platform.</p>
         </div>

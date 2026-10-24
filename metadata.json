@@ -1,6 +1,6 @@
 {
   "name": "Summit Vault Capital",
-  "description": "A premium full-service investment brokerage and insurance platform. ",
+  "description": "Institutional multi-asset investment brokerage and private insurance depository uniting high-conviction wealth management with segregated vault custody.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
