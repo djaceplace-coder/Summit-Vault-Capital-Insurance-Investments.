@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'adereraadenike@gmail.com' ||
+        request.auth.token.email == 'admin@summitvaultcapital.online' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string &&
+        data.userId.size() <= 128 &&
+        data.email is string &&
+        data.email.size() <= 256 &&
+        (!('firstName' in data) || (data.firstName is string && data.firstName.size() <= 100)) &&
+        (!('lastName' in data) || (data.lastName is string && data.lastName.size() <= 100)) &&
+        (!('totalBalance' in data) || data.totalBalance is number) &&
+        (!('investedAmount' in data) || data.investedAmount is number) &&
+        (!('cashBalance' in data) || data.cashBalance is number) &&
+        (!('returnsAmount' in data) || data.returnsAmount is number) &&
+        (!('role' in data) || (data.role in ['client', 'admin'])) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    function isValidTransaction(data) {
+      return data.id is string &&
+        data.id.size() <= 128 &&
+        data.userId is string &&
+        data.userId.size() <= 128 &&
+        data.type in ['deposit', 'withdrawal', 'buy', 'sell', 'dividend', 'fee'] &&
+        data.amount is number &&
+        data.status in ['completed', 'pending', 'failed'] &&
+        (!('assetName' in data) || (data.assetName is string && data.assetName.size() <= 100)) &&
+        (!('timestamp' in data) || (data.timestamp is string && data.timestamp.size() <= 64));
+    }
+
+    function isValidPolicy(data) {
+      return data.id is string &&
+        data.id.size() <= 128 &&
+        data.userId is string &&
+        data.userId.size() <= 128 &&
+        data.policyNumber is string &&
+        data.policyNumber.size() <= 64 &&
+        data.type is string &&
+        data.type.size() <= 100 &&
+        data.coverage is number &&
+        data.premium is number &&
+        data.status in ['active', 'pending', 'lapsed'] &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
+    }
+
+    // User profile and balances
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if (isOwner(userId) || isAdmin()) &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().userId == userId &&
+        (incoming().role == 'client' || isAdmin());
+      allow update: if (isOwner(userId) || isAdmin()) &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().userId == existing().userId &&
+        (isAdmin() || (
+          incoming().role == existing().role &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['totalBalance', 'investedAmount', 'cashBalance', 'returnsAmount', 'updatedAt', 'firstName', 'lastName'])
+        ));
+      allow delete: if isAdmin();
+
+      // Transactions subcollection
+      match /transactions/{transactionId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if (isOwner(userId) || isAdmin()) &&
+          isValidId(transactionId) &&
+          isValidTransaction(incoming()) &&
+          incoming().userId == userId;
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+
+      // Insurance policies subcollection
+      match /policies/{policyId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if (isOwner(userId) || isAdmin()) &&
+          isValidId(policyId) &&
+          isValidPolicy(incoming()) &&
+          incoming().userId == userId;
+        allow update: if isAdmin() || (
+          isOwner(userId) &&
+          isValidPolicy(incoming()) &&
+          incoming().userId == existing().userId &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+        );
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Admins registry
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Connection heartbeat
+    match /test/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

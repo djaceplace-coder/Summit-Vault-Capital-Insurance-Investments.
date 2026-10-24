@@ -1,0 +1,182 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "User Profile and Balances",
+      "description": "User profile data, investment metrics, and cash balances",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Auth UID of the user",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email address",
+          "maxLength": 256
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User first name",
+          "maxLength": 100
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User last name",
+          "maxLength": 100
+        },
+        "totalBalance": {
+          "type": "number",
+          "description": "Total account balance in USD"
+        },
+        "investedAmount": {
+          "type": "number",
+          "description": "Total amount invested in assets"
+        },
+        "cashBalance": {
+          "type": "number",
+          "description": "Liquid uninvested cash balance"
+        },
+        "returnsAmount": {
+          "type": "number",
+          "description": "All-time accumulated returns"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["client", "admin"],
+          "description": "User role permissions"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation ISO timestamp or server timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update ISO timestamp or server timestamp"
+        }
+      },
+      "required": ["userId", "email"]
+    },
+    "transaction": {
+      "title": "Transaction Record",
+      "description": "Record of deposits, withdrawals, and investments",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique transaction ID",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Auth UID of the owner",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["deposit", "withdrawal", "buy", "sell", "dividend", "fee"],
+          "description": "Type of financial transaction"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount transferred or invested"
+        },
+        "assetName": {
+          "type": "string",
+          "description": "Name or symbol of the asset",
+          "maxLength": 100
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "pending", "failed"],
+          "description": "Execution status"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Transaction timestamp"
+        }
+      },
+      "required": ["id", "userId", "type", "amount", "status"]
+    },
+    "insurancePolicy": {
+      "title": "Insurance Policy",
+      "description": "Insurance policy held by the client",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique policy ID",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Auth UID of the policy holder",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "policyNumber": {
+          "type": "string",
+          "description": "Public policy tracking number",
+          "maxLength": 64
+        },
+        "type": {
+          "type": "string",
+          "description": "Policy line of business or type",
+          "maxLength": 100
+        },
+        "coverage": {
+          "type": "number",
+          "description": "Coverage limit amount"
+        },
+        "premium": {
+          "type": "number",
+          "description": "Monthly or annual premium"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "pending", "lapsed"],
+          "description": "Current policy state"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "userId", "policyNumber", "type", "coverage", "premium", "status"]
+    },
+    "testConnection": {
+      "title": "Connection Test",
+      "description": "Heartbeat document to verify Firestore readiness",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Heartbeat status",
+          "maxLength": 50
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "Individual client account balances and profile data"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "transaction",
+      "description": "User transaction history"
+    },
+    "/users/{userId}/policies/{policyId}": {
+      "schema": "insurancePolicy",
+      "description": "Active and past client insurance policies"
+    },
+    "/admins/{adminId}": {
+      "schema": "userProfile",
+      "description": "Trusted admin users registry"
+    },
+    "/test/{docId}": {
+      "schema": "testConnection",
+      "description": "Connection test collection"
+    }
+  }
+}
