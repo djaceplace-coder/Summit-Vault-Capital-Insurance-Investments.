@@ -1,33 +1,33 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Filter, ArrowRight } from 'lucide-react';
+import { Search, MapPin, Filter, ArrowRight, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
-
-const agentsData = [
-  { id: '1', name: "Sarah Jenkins", role: "Equities & Wealth Specialist", exp: "12 yrs exp", location: "Las Vegas, NV", lang: "English", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=60" },
-  { id: '2', name: "David Chen", role: "Digital Assets Lead", exp: "8 yrs exp", location: "Reno, NV", lang: "English, Mandarin", img: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=800&auto=format&fit=crop&q=60" },
-  { id: '3', name: "Elena Rodriguez", role: "Insurance & Estate Planning", exp: "15 yrs exp", location: "Miami, FL", lang: "English, Spanish", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&auto=format&fit=crop&q=60" },
-  { id: '4', name: "Marcus Johnson", role: "Alternative Assets", exp: "10 yrs exp", location: "New York, NY", lang: "English", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=60" },
-  { id: '5', name: "Priya Patel", role: "Managed Portfolios", exp: "7 yrs exp", location: "Chicago, IL", lang: "English, Hindi", img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&auto=format&fit=crop&q=60" },
-  { id: '6', name: "Michael Chang", role: "Property & Casualty", exp: "20 yrs exp", location: "San Francisco, CA", lang: "English", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=60" },
-];
+import { useAgents } from '../../lib/agentsData';
+import { useAuth } from '../../lib/AuthContext';
 
 export function AgentsDirectory() {
+  const { agents } = useAgents();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filters = ['All', 'Wealth', 'Insurance', 'Crypto', 'Alternative'];
 
-  const filteredAgents = agentsData.filter(agent => {
-    const matchesSearch = agent.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          agent.role.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const activeAgents = agents.filter((a) => a.status === 'Active');
+
+  const filteredAgents = activeAgents.filter((agent) => {
+    const matchesSearch =
+      agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.role.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (activeFilter === 'All') return matchesSearch;
-    if (activeFilter === 'Wealth') return matchesSearch && agent.role.includes('Wealth') || agent.role.includes('Managed');
-    if (activeFilter === 'Insurance') return matchesSearch && agent.role.includes('Insurance') || agent.role.includes('Property');
+    if (activeFilter === 'Wealth')
+      return matchesSearch && (agent.role.includes('Wealth') || agent.role.includes('Managed'));
+    if (activeFilter === 'Insurance')
+      return matchesSearch && (agent.role.includes('Insurance') || agent.role.includes('Property'));
     if (activeFilter === 'Crypto') return matchesSearch && agent.role.includes('Digital');
     if (activeFilter === 'Alternative') return matchesSearch && agent.role.includes('Alternative');
-    
+
     return matchesSearch;
   });
 
@@ -48,7 +48,7 @@ export function AgentsDirectory() {
           transition={{ delay: 0.1 }}
           className="text-lg sm:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed"
         >
-          Find an accredited advisor matched to your specific financial goals and language preferences.
+          Find an accredited advisor matched to your specific financial goals and start a direct 2-way conversation.
         </motion.p>
       </section>
 
@@ -67,11 +67,11 @@ export function AgentsDirectory() {
           </div>
           
           <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 hide-scrollbar -mx-1 px-1">
-            {filters.map(f => (
+            {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`px-5 py-2.5 rounded-2xl text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`px-5 py-2.5 rounded-2xl text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   activeFilter === f 
                     ? 'bg-slate-900 text-white shadow-md' 
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -80,9 +80,6 @@ export function AgentsDirectory() {
                 {f}
               </button>
             ))}
-            <button className="px-5 py-2.5 rounded-2xl text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center gap-2">
-              <Filter className="w-4 h-4" /> More
-            </button>
           </div>
         </div>
       </section>
@@ -93,7 +90,7 @@ export function AgentsDirectory() {
           layout
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
         >
-          {filteredAgents.map((agent, i) => (
+          {filteredAgents.map((agent) => (
             <motion.div 
               layout
               initial={{ opacity: 0, scale: 0.9 }}
@@ -115,11 +112,23 @@ export function AgentsDirectory() {
                   </div>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-bold font-heading text-white mb-1 tracking-tight">{agent.name}</h3>
-                <p className="text-slate-300 text-sm mb-6">{agent.role}</p>
-                <Link to={`/agents/${agent.id}`} className="flex items-center justify-between bg-white/90 backdrop-blur-sm hover:bg-white text-slate-900 px-5 py-3.5 rounded-2xl text-sm font-semibold transition-all shadow-sm">
-                  <span>View Profile</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                <p className="text-slate-300 text-sm mb-5">{agent.role}</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Link
+                    to={`/agents/${agent.id}`}
+                    className="flex items-center justify-center gap-1.5 bg-white/95 backdrop-blur-sm hover:bg-white text-slate-900 px-4 py-3 rounded-2xl text-xs font-semibold transition-all shadow-sm"
+                  >
+                    <span>View Profile</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <Link
+                    to={user ? `/messages?agent=${agent.id}` : '/login'}
+                    className="flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-3 rounded-2xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Chat Now</span>
+                  </Link>
+                </div>
               </div>
             </motion.div>
           ))}

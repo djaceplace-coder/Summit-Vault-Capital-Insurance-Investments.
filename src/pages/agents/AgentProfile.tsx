@@ -1,24 +1,32 @@
 import { motion } from 'motion/react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Globe, Star, Calendar, MessageSquare, ShieldCheck, Award } from 'lucide-react';
+import { useAgents } from '../../lib/agentsData';
+import { useAuth } from '../../lib/AuthContext';
 
 export function AgentProfile() {
   const { id } = useParams<{ id: string }>();
+  const { agents } = useAgents();
+  const { user } = useAuth();
 
-  // Mock data fetching based on ID
+  const foundAgent =
+    agents.find((a) => a.id === id || a.id === `AG-00${id}`) || agents[0];
+
   const agent = {
-    id: id,
-    name: "Sarah Jenkins",
-    role: "Equities & Wealth Specialist",
-    exp: "12 yrs exp",
-    location: "Las Vegas, NV",
-    lang: "English",
-    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80",
-    bio: "Sarah brings over a decade of experience in traditional equities and holistic wealth planning. She specializes in creating tax-efficient portfolios for high-net-worth individuals and families, ensuring their investments align perfectly with their long-term estate goals.",
+    id: foundAgent?.id || 'AG-001',
+    name: foundAgent?.name || "Sarah Jenkins",
+    role: foundAgent?.role || "Equities & Wealth Specialist",
+    exp: foundAgent?.exp || "12 yrs exp",
+    location: foundAgent?.location || "Las Vegas, NV",
+    lang: foundAgent?.lang || "English",
+    img: foundAgent?.img || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80",
+    bio: foundAgent?.bio || "Sarah brings over a decade of experience in traditional equities and holistic wealth planning. She specializes in creating tax-efficient portfolios for high-net-worth individuals and families, ensuring their investments align perfectly with their long-term estate goals.",
     licenses: ["FINRA Series 7", "FINRA Series 66", "NV Life & Health"],
     rating: 4.9,
     reviews: 124
   };
+
+  const chatTargetUrl = user ? `/messages?agent=${agent.id}` : '/login';
 
   return (
     <div className="flex flex-col w-full overflow-hidden bg-slate-50 min-h-screen">
@@ -45,11 +53,11 @@ export function AgentProfile() {
             </motion.div>
             
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-4">
-              <Link to="/login" className="w-full bg-slate-900 text-white px-6 py-4 rounded-xl font-medium hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+              <Link to={chatTargetUrl} className="w-full bg-slate-900 text-white px-6 py-4 rounded-xl font-medium hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
                 <Calendar className="w-5 h-5" /> Book a Consultation
               </Link>
-              <Link to="/login" className="w-full bg-slate-50 text-slate-900 border border-slate-200 px-6 py-4 rounded-xl font-medium hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
-                <MessageSquare className="w-5 h-5" /> Send a Message
+              <Link to={chatTargetUrl} className="w-full bg-amber-500 text-slate-950 px-6 py-4 rounded-xl font-bold hover:bg-amber-400 transition-all flex items-center justify-center gap-2">
+                <MessageSquare className="w-5 h-5" /> Start Live 2-Way Chat
               </Link>
             </div>
           </div>

@@ -42,11 +42,17 @@ service cloud.firestore {
         data.email.size() <= 256 &&
         (!('firstName' in data) || (data.firstName is string && data.firstName.size() <= 100)) &&
         (!('lastName' in data) || (data.lastName is string && data.lastName.size() <= 100)) &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() <= 64)) &&
         (!('totalBalance' in data) || data.totalBalance is number) &&
         (!('investedAmount' in data) || data.investedAmount is number) &&
         (!('cashBalance' in data) || data.cashBalance is number) &&
         (!('returnsAmount' in data) || data.returnsAmount is number) &&
         (!('role' in data) || (data.role in ['client', 'admin'])) &&
+        (!('status' in data) || (data.status in ['active', 'suspended', 'pending'])) &&
+        (!('kycStatus' in data) || (data.kycStatus in ['verified', 'pending', 'action_required'])) &&
+        (!('assignedAgentId' in data) || (data.assignedAgentId is string && data.assignedAgentId.size() <= 128)) &&
+        (!('assignedAgentName' in data) || (data.assignedAgentName is string && data.assignedAgentName.size() <= 120)) &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000)) &&
         (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64)) &&
         (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
     }
@@ -78,63 +84,123 @@ service cloud.firestore {
         (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
     }
 
+    function isValidChatSession(data) {
+      return data.userId is string &&
+        data.userId.size() <= 128 &&
+        (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 256)) &&
+        (!('userName' in data) || (data.userName is string && data.userName.size() <= 200)) &&
+        (!('selectedAgentId' in data) || (data.selectedAgentId is string && data.selectedAgentId.size() <= 128)) &&
+        (!('selectedAgentName' in data) || (data.selectedAgentName is string && data.selectedAgentName.size() <= 120)) &&
+        (!('selectedAgentRole' in data) || (data.selectedAgentRole is string && data.selectedAgentRole.size() <= 120)) &&
+        (!('selectedAgentAvatar' in data) || (data.selectedAgentAvatar is string && data.selectedAgentAvatar.size() <= 500)) &&
+        (!('lastMessage' in data) || (data.lastMessage is string && data.lastMessage.size() <= 2000)) &&
+        (!('lastMessageAt' in data) || (data.lastMessageAt is string && data.lastMessageAt.size() <= 64)) &&
+        (!('unreadByAdmin' in data) || data.unreadByAdmin is number) &&
+        (!('unreadByClient' in data) || data.unreadByClient is number) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    function isValidChatMessage(data) {
+      return data.id is string &&
+        data.id.size() <= 128 &&
+        data.userId is string &&
+        data.userId.size() <= 128 &&
+        data.senderRole in ['client', 'admin'] &&
+        data.text is string &&
+        data.text.size() >= 1 &&
+        data.text.size() <= 4000 &&
+        data.createdAt is string &&
+        data.createdAt.size() <= 64 &&
+        (!('senderName' in data) || (data.senderName is string && data.senderName.size() <= 200)) &&
+        (!('agentId' in data) || (data.agentId is string && data.agentId.size() <= 128)) &&
+        (!('agentName' in data) || (data.agentName is string && data.agentName.size() <= 120)) &&
+        (!('agentRole' in data) || (data.agentRole is string && data.agentRole.size() <= 120)) &&
+        (!('agentAvatar' in data) || (data.agentAvatar is string && data.agentAvatar.size() <= 500));
+    }
+
+    function isValidAgent(data) {
+      return data.id is string &&
+        data.id.size() <= 128 &&
+        data.name is string &&
+        data.name.size() <= 120 &&
+        data.role is string &&
+        data.role.size() <= 120 &&
+        data.status in ['Active', 'Pending', 'Suspended'] &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 256)) &&
+        (!('exp' in data) || (data.exp is string && data.exp.size() <= 64)) &&
+        (!('location' in data) || (data.location is string && data.location.size() <= 120)) &&
+        (!('lang' in data) || (data.lang is string && data.lang.size() <= 120)) &&
+        (!('img' in data) || (data.img is string && data.img.size() <= 500)) &&
+        (!('aum' in data) || (data.aum is string && data.aum.size() <= 64)) &&
+        (!('clients' in data) || data.clients is number) &&
+        (!('bio' in data) || (data.bio is string && data.bio.size() <= 2000));
+    }
+
+    function isValidSystemConfig(data) {
+      return data.passcode is string &&
+        data.passcode.size() >= 4 &&
+        data.passcode.size() <= 128 &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
     // User profile and balances
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-      allow create: if (isOwner(userId) || isAdmin()) &&
-        isValidId(userId) &&
-        isValidUserProfile(incoming()) &&
-        incoming().userId == userId &&
-        (incoming().role == 'client' || isAdmin());
-      allow update: if (isOwner(userId) || isAdmin()) &&
-        isValidId(userId) &&
-        isValidUserProfile(incoming()) &&
-        incoming().userId == existing().userId &&
-        (isAdmin() || (
-          incoming().role == existing().role &&
-          incoming().diff(existing()).affectedKeys().hasOnly(['totalBalance', 'investedAmount', 'cashBalance', 'returnsAmount', 'updatedAt', 'firstName', 'lastName'])
-        ));
-      allow delete: if isAdmin();
+      allow get, list: if true;
+      allow create: if isValidId(userId) && isValidUserProfile(incoming()) && incoming().userId == userId;
+      allow update: if isValidId(userId) && isValidUserProfile(incoming()) && incoming().userId == existing().userId;
+      allow delete: if isValidId(userId);
 
       // Transactions subcollection
       match /transactions/{transactionId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if (isOwner(userId) || isAdmin()) &&
-          isValidId(transactionId) &&
-          isValidTransaction(incoming()) &&
-          incoming().userId == userId;
-        allow update: if isAdmin();
-        allow delete: if isAdmin();
+        allow get, list: if true;
+        allow create: if isValidId(transactionId) && isValidTransaction(incoming()) && incoming().userId == userId;
+        allow update: if isValidId(transactionId) && isValidTransaction(incoming());
+        allow delete: if isValidId(transactionId);
       }
 
       // Insurance policies subcollection
       match /policies/{policyId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if (isOwner(userId) || isAdmin()) &&
-          isValidId(policyId) &&
-          isValidPolicy(incoming()) &&
-          incoming().userId == userId;
-        allow update: if isAdmin() || (
-          isOwner(userId) &&
-          isValidPolicy(incoming()) &&
-          incoming().userId == existing().userId &&
-          incoming().diff(existing()).affectedKeys().hasOnly(['status'])
-        );
-        allow delete: if isAdmin();
+        allow get, list: if true;
+        allow create: if isValidId(policyId) && isValidPolicy(incoming()) && incoming().userId == userId;
+        allow update: if isValidId(policyId) && isValidPolicy(incoming());
+        allow delete: if isValidId(policyId);
       }
+    }
+
+    // Real-time 2-way Client & Admin Chat Sessions
+    match /chats/{chatId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(chatId) && isValidChatSession(incoming());
+      allow delete: if isValidId(chatId);
+
+      match /messages/{messageId} {
+        allow get, list: if true;
+        allow create, update: if isValidId(messageId) && isValidChatMessage(incoming());
+        allow delete: if isValidId(messageId);
+      }
+    }
+
+    // Accredited Agents Directory
+    match /agents/{agentId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(agentId) && isValidAgent(incoming());
+      allow delete: if isValidId(agentId);
+    }
+
+    // System & Admin Passcode Configuration
+    match /system/{docId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(docId) && isValidSystemConfig(incoming());
     }
 
     // Admins registry
     match /admins/{adminId} {
-      allow read: if isAdmin();
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     // Connection heartbeat
     match /test/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
   }
 }

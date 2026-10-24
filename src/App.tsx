@@ -44,6 +44,7 @@ import { InsurancePolicies } from './pages/dashboard/InsurancePolicies';
 
 import { ScrollToTop } from './components/common/ScrollToTop';
 import { NotFound } from './pages/NotFound';
+import { AdminGate } from './components/admin/AdminGate';
 
 export default function App() {
   return (
@@ -100,10 +101,12 @@ export default function App() {
         </Route>
 
         <Route path="admin">
-          <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="agents" element={<AdminAgents />} />
-          <Route path="balances" element={<AdminBalances />} />
+          <Route index element={<AdminGate><AdminDashboard initialTab="clients" /></AdminGate>} />
+          <Route path="dashboard" element={<AdminGate><AdminDashboard initialTab="clients" /></AdminGate>} />
+          <Route path="balances" element={<AdminGate><AdminDashboard initialTab="clients" /></AdminGate>} />
+          <Route path="chats" element={<AdminGate><AdminDashboard initialTab="chats" /></AdminGate>} />
+          <Route path="agents" element={<AdminGate><AdminDashboard initialTab="agents" /></AdminGate>} />
+          <Route path="settings" element={<AdminGate><AdminDashboard initialTab="settings" /></AdminGate>} />
         </Route>
 
         {/* 404 Catch-All Route for Clean Reloads */}

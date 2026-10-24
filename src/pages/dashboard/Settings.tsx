@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Bell, Shield, Key, CreditCard, Smartphone, CheckCircle2, Loader2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
 
 export function Settings() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, updateUserProfile } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -14,6 +14,37 @@ export function Settings() {
   };
   const { openAgentChat } = useOutletContext<{ openAgentChat: (prefill?: string) => void }>();
   const [activeTab, setActiveTab] = useState('profile');
+  const [firstName, setFirstName] = useState(profile?.firstName || '');
+  const [lastName, setLastName] = useState(profile?.lastName || '');
+  const [phone, setPhone] = useState(profile?.phone || '+1 (555) 000-0000');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSavedMsg, setProfileSavedMsg] = useState('');
+
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.firstName || '');
+      setLastName(profile.lastName || '');
+      setPhone(profile.phone || '+1 (555) 000-0000');
+    }
+  }, [profile?.firstName, profile?.lastName, profile?.phone]);
+
+  const handleSaveProfile = async (e: FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    setProfileSavedMsg('');
+    try {
+      await updateUserProfile({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phone.trim(),
+      });
+      setProfileSavedMsg('Profile synchronized in real time.');
+      setTimeout(() => setProfileSavedMsg(''), 3500);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const [showCardModal, setShowCardModal] = useState(false);
   const [cardStatus, setCardStatus] = useState('idle');
   const [cardNumber, setCardNumber] = useState('');
@@ -29,7 +60,7 @@ export function Settings() {
   ];
 
   
-  const handleAddCard = (e) => {
+  const handleAddCard = (e: FormEvent) => {
     e.preventDefault();
     setCardStatus('verifying');
     setTimeout(() => {
@@ -46,7 +77,7 @@ export function Settings() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full max-w-5xl mx-auto p-4 sm:p-6">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900 mb-2">Account Settings</h1>
         <p className="text-slate-500">Manage your profile, security preferences, and linked accounts.</p>
@@ -81,45 +112,73 @@ export function Settings() {
               <h2 className="text-xl font-bold text-slate-900 mb-6">Profile Information</h2>
               
               <div className="flex items-center gap-6 mb-8">
-                <div className="w-24 h-24 bg-slate-900 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl font-bold shadow-md">
-                  {profile?.firstName?.[0] || user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                <div className="w-20 h-20 bg-slate-900 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-md">
+                  {firstName?.[0] || profile?.firstName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div>
-                  <button onClick={() => openAgentChat('I want to change my profile photo.')} className="px-4 py-2 bg-slate-900 text-white rounded-lg font-medium text-sm hover:bg-slate-800 transition-colors mb-2">
-                    Change Photo
-                  </button>
-                  <p className="text-xs text-slate-500">JPG, GIF or PNG. Max size of 800K</p>
+                  <div className="text-sm font-bold text-slate-900">
+                    Assigned Advisor: <span className="text-amber-700">{profile?.assignedAgentName || 'Sarah Jenkins'}</span>
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    Account Status: <strong className="uppercase text-emerald-600">{profile?.status || 'active'}</strong> · KYC: <strong className="uppercase text-slate-700">{profile?.kycStatus || 'verified'}</strong>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              {profileSavedMsg && (
+                <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{profileSavedMsg}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveProfile} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
-                    <input type="text" defaultValue={profile?.firstName || user?.displayName?.split(' ')[0] || ""} className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none bg-slate-50 focus:bg-white" />
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none bg-slate-50 focus:bg-white"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
-                    <input type="text" defaultValue={profile?.lastName || user?.displayName?.split(' ').slice(1).join(' ') || ""} className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none bg-slate-50 focus:bg-white" />
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none bg-slate-50 focus:bg-white"
+                    />
                   </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
-                  <input type="email" defaultValue={user?.email || ""} disabled className="w-full p-3 border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
+                  <input type="email" value={profile?.email || user?.email || ""} disabled className="w-full p-3 border border-slate-200 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed" />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
-                  <input type="tel" defaultValue="+1 (555) 000-0000" className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none bg-slate-50 focus:bg-white" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none bg-slate-50 focus:bg-white"
+                  />
                 </div>
 
                 <div className="pt-4 flex justify-end">
-                  <button onClick={() => openAgentChat('I want to save changes to my profile.')} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-colors">
-                    Save Changes
+                  <button
+                    type="submit"
+                    disabled={savingProfile}
+                    className="px-6 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {savingProfile ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
-              </div>
+              </form>
             </motion.div>
           )}
 

@@ -2,13 +2,14 @@
   "entities": {
     "userProfile": {
       "title": "User Profile and Balances",
-      "description": "User profile data, investment metrics, and cash balances",
+      "description": "User profile data, investment metrics, cash balances, and assigned advisor",
       "type": "object",
       "properties": {
         "userId": {
           "type": "string",
-          "description": "The Firebase Auth UID of the user",
-          "pattern": "^[a-zA-Z0-9_-]+$"
+          "description": "The unique ID of the user",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
         },
         "email": {
           "type": "string",
@@ -25,6 +26,11 @@
           "type": "string",
           "description": "User last name",
           "maxLength": 100
+        },
+        "phone": {
+          "type": "string",
+          "description": "User phone number",
+          "maxLength": 64
         },
         "totalBalance": {
           "type": "number",
@@ -47,13 +53,40 @@
           "enum": ["client", "admin"],
           "description": "User role permissions"
         },
+        "status": {
+          "type": "string",
+          "enum": ["active", "suspended", "pending"],
+          "description": "Account lifecycle status"
+        },
+        "kycStatus": {
+          "type": "string",
+          "enum": ["verified", "pending", "action_required"],
+          "description": "KYC verification state"
+        },
+        "assignedAgentId": {
+          "type": "string",
+          "description": "ID of the assigned wealth advisor",
+          "maxLength": 128
+        },
+        "assignedAgentName": {
+          "type": "string",
+          "description": "Name of the assigned wealth advisor",
+          "maxLength": 120
+        },
+        "notes": {
+          "type": "string",
+          "description": "Internal fiduciary notes",
+          "maxLength": 1000
+        },
         "createdAt": {
           "type": "string",
-          "description": "Creation ISO timestamp or server timestamp"
+          "description": "Creation ISO timestamp",
+          "maxLength": 64
         },
         "updatedAt": {
           "type": "string",
-          "description": "Last update ISO timestamp or server timestamp"
+          "description": "Last update ISO timestamp",
+          "maxLength": 64
         }
       },
       "required": ["userId", "email"]
@@ -66,12 +99,14 @@
         "id": {
           "type": "string",
           "description": "Unique transaction ID",
-          "pattern": "^[a-zA-Z0-9_-]+$"
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
         },
         "userId": {
           "type": "string",
           "description": "Auth UID of the owner",
-          "pattern": "^[a-zA-Z0-9_-]+$"
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
         },
         "type": {
           "type": "string",
@@ -94,7 +129,8 @@
         },
         "timestamp": {
           "type": "string",
-          "description": "Transaction timestamp"
+          "description": "Transaction timestamp",
+          "maxLength": 64
         }
       },
       "required": ["id", "userId", "type", "amount", "status"]
@@ -107,12 +143,14 @@
         "id": {
           "type": "string",
           "description": "Unique policy ID",
-          "pattern": "^[a-zA-Z0-9_-]+$"
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
         },
         "userId": {
           "type": "string",
           "description": "Auth UID of the policy holder",
-          "pattern": "^[a-zA-Z0-9_-]+$"
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
         },
         "policyNumber": {
           "type": "string",
@@ -139,10 +177,224 @@
         },
         "createdAt": {
           "type": "string",
-          "description": "Creation timestamp"
+          "description": "Creation timestamp",
+          "maxLength": 64
         }
       },
       "required": ["id", "userId", "policyNumber", "type", "coverage", "premium", "status"]
+    },
+    "chatSession": {
+      "title": "Client Chat Session",
+      "description": "Real-time conversation metadata between a client and admin/agents",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Client user ID",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "Client email",
+          "maxLength": 256
+        },
+        "userName": {
+          "type": "string",
+          "description": "Client display name",
+          "maxLength": 200
+        },
+        "selectedAgentId": {
+          "type": "string",
+          "description": "ID of the agent chosen by the client or admin",
+          "maxLength": 128
+        },
+        "selectedAgentName": {
+          "type": "string",
+          "description": "Name of the selected agent",
+          "maxLength": 120
+        },
+        "selectedAgentRole": {
+          "type": "string",
+          "description": "Role of the selected agent",
+          "maxLength": 120
+        },
+        "selectedAgentAvatar": {
+          "type": "string",
+          "description": "Avatar URL of the selected agent",
+          "maxLength": 500
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "Preview of the most recent message",
+          "maxLength": 2000
+        },
+        "lastMessageAt": {
+          "type": "string",
+          "description": "ISO timestamp of last message",
+          "maxLength": 64
+        },
+        "unreadByAdmin": {
+          "type": "number",
+          "description": "Count of messages unread by admin"
+        },
+        "unreadByClient": {
+          "type": "number",
+          "description": "Count of messages unread by client"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["userId"]
+    },
+    "chatMessage": {
+      "title": "Chat Message",
+      "description": "Individual message inside a client chat thread",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Message ID",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Client UID who owns the thread",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
+        },
+        "senderRole": {
+          "type": "string",
+          "enum": ["client", "admin"],
+          "description": "Whether sent by client or admin/agent"
+        },
+        "senderName": {
+          "type": "string",
+          "description": "Display name of sender",
+          "maxLength": 200
+        },
+        "agentId": {
+          "type": "string",
+          "description": "Agent persona ID associated with the message",
+          "maxLength": 128
+        },
+        "agentName": {
+          "type": "string",
+          "description": "Agent persona name",
+          "maxLength": 120
+        },
+        "agentRole": {
+          "type": "string",
+          "description": "Agent persona title",
+          "maxLength": 120
+        },
+        "agentAvatar": {
+          "type": "string",
+          "description": "Agent avatar URL",
+          "maxLength": 500
+        },
+        "text": {
+          "type": "string",
+          "description": "Message content",
+          "maxLength": 4000
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO creation timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["id", "userId", "senderRole", "text", "createdAt"]
+    },
+    "agentRecord": {
+      "title": "Accredited Agent",
+      "description": "Wealth advisor and insurance specialist profile",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Agent ID",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Agent full name",
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "description": "Agent email",
+          "maxLength": 256
+        },
+        "role": {
+          "type": "string",
+          "description": "Specialty role",
+          "maxLength": 120
+        },
+        "exp": {
+          "type": "string",
+          "description": "Experience summary",
+          "maxLength": 64
+        },
+        "location": {
+          "type": "string",
+          "description": "Branch location",
+          "maxLength": 120
+        },
+        "lang": {
+          "type": "string",
+          "description": "Languages spoken",
+          "maxLength": 120
+        },
+        "img": {
+          "type": "string",
+          "description": "Portrait URL",
+          "maxLength": 500
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Pending", "Suspended"],
+          "description": "Operational status"
+        },
+        "aum": {
+          "type": "string",
+          "description": "Managed AUM display string",
+          "maxLength": 64
+        },
+        "clients": {
+          "type": "number",
+          "description": "Number of active clients"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Advisor biography",
+          "maxLength": 2000
+        }
+      },
+      "required": ["id", "name", "role", "status"]
+    },
+    "systemConfig": {
+      "title": "System & Admin Configuration",
+      "description": "Global admin settings including configurable admin passcode",
+      "type": "object",
+      "properties": {
+        "passcode": {
+          "type": "string",
+          "description": "Admin Center access passcode",
+          "maxLength": 128
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last updated timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["passcode"]
     },
     "testConnection": {
       "title": "Connection Test",
@@ -169,6 +421,22 @@
     "/users/{userId}/policies/{policyId}": {
       "schema": "insurancePolicy",
       "description": "Active and past client insurance policies"
+    },
+    "/chats/{chatId}": {
+      "schema": "chatSession",
+      "description": "Client chat threads funneled to admin"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "chatMessage",
+      "description": "Messages within a client chat thread"
+    },
+    "/agents/{agentId}": {
+      "schema": "agentRecord",
+      "description": "Accredited agents directory"
+    },
+    "/system/{docId}": {
+      "schema": "systemConfig",
+      "description": "System and admin passcode configuration"
     },
     "/admins/{adminId}": {
       "schema": "userProfile",
